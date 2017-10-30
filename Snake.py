@@ -1,7 +1,7 @@
 class Segment:
     width = 20;
     height = 20;
-    color = (255, 0, 0)
+    color = (100, 200, 255)
 
     def __init__(self, _x, _y):
         self.x = _x

@@ -43,6 +43,8 @@ class PathFinder :
 
         #while we have nodes to explore:
         while len(openSet) > 0 :
+            print("loop")
+            self.gameState.screen.fill((0,0,0))
             current = openSet[0]
             #find the node least difficult to travel
             for node in openSet:
@@ -51,13 +53,14 @@ class PathFinder :
 
             #we found it! return the path to take
             if current.x/20 == self.end[0] and current.y/20 == self.end[1] :
+                print("found")
                 return self.reconstructPath(current)
 
             #remove current from  the open set and add it to the closed set.
             openSet.remove(current)
-            print("Open set length: " + str(len(openSet)))
             closedSet.append(current)
-            print("Close set length: " + str(len(closedSet)))
+            self.gameState.drawSet(closedSet, (255, 0, 0))
+            self.gameState.drawSet(openSet, (0, 255, 0))
 
             #check all the neighbours not yet explored
             x = int(current.x/20)
@@ -83,16 +86,23 @@ class PathFinder :
                 not self.grid[x][y+1] in closedSet) :
                     self.evalNeighbour(self.grid[x][y+1], openSet, current)
 
+
+            for segment in self.gameState.snake.body:
+                self.gameState.drawSegment(segment)
+            self.gameState.drawPath(current, (0,0,255))
+
+            #pygame.display.update()
             #self.drawOpenSet()
             #self.drawClosedSet()
             #self.gameState.
-
+        print("not found")
         return []
 
 
     def evalNeighbour(self, evalNode, openSet, current):
-        openSet.append(evalNode)
-        if evalNode.hScore < current.hScore :
+        if not evalNode in openSet:
+            openSet.append(evalNode)
+        if evalNode.hScore < current.hScore or evalNode.previous == None:
             evalNode.previous = current
 
     def reconstructPath(self, node):
@@ -118,25 +128,32 @@ class PathFinder :
             rowList = []
             for j in range (0, int(self.gameState.height/20)) :
                 y = j*20
-                if self.notInSnake(x,y) :
-                    node = Node(x,y, False, self.dist(x, y, self.end[0]*20, self.end[1]*20))
+                if self.InSnakeBody(x,y) :
+                    node = Node(x,y, True, self.dist(x, y, self.end[0]*20, self.end[1]*20))
                 else :
-                    node = Node(x, y, True, self.dist(x, y, self.end[0]*20, self.end[1]*20))
+                    node = Node(x, y, False, self.dist(x, y, self.end[0]*20, self.end[1]*20))
                 rowList.append(node)
             self.grid.append(rowList)
 
 
-    def notInSnake(self, x, y):
+    def InSnakeBody(self, x, y):
         for segment in self.gameState.snake.body :
             if x == segment.x and y == segment.y :
-                return False
-        return True
+                return True
+        return False
 
 
     def dist(self, x, y, targetX, targetY):
         return abs(x - targetX) + abs(y - targetY)
 
 
+    def drawSet(self, set, color):
+        for node in set:
+            pygame.draw.rect(self.screen, color, (node.x, node.y, 20, 20))
+
+    def drawPath(self, node, color):
+        while node.previous != None:
+            pygame.draw.rect(self.screen, color, (node.x, node.y, 20, 20))
 class Node:
 
     def __init__(self, x, y, inSnake, distFood):

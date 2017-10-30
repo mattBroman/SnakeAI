@@ -44,11 +44,11 @@ class Board:
         inSnake = True
         # we gotta make sure the pellet doesnt spawn inside of the snake
         while inSnake:
-            newX = random.randint(1, self.width/20 - 2)
-            newY = random.randint(1, self.height / 20 - 2)
+            newX = random.randint(1, (self.width/20) - 3)
+            newY = random.randint(1, (self.height/20) - 3)
             inSnake = False
             for segement in self.snake.body:
-                if newX == segement.x and newY == segement.y:
+                if newX*20 == segement.x and newY*20 == segement.y:
                     inSnake = True
 
         self.food = Pelet(newX, newY)
@@ -64,6 +64,19 @@ class Board:
             for i  in range(1, len(self.snake.body) - 1) :
                 if self.snake.head.x == self.snake.body[i].x and self.snake.head.y == self.snake.body[i].y:
                     Menu.lose(self.screen, self.score)
+
+
+    def drawSet(self, set, color):
+        for node in set:
+            pygame.draw.rect(self.screen, color, (node.x, node.y, 20, 20))
+        pygame.display.update()
+
+    def drawPath(self, node, color):
+        while node.previous != None:
+            pygame.draw.rect(self.screen, color, (node.x, node.y, 20, 20))
+            node = node.previous
+        pygame.display.update()
+        pygame.time.delay(2)
 
     def mainLoop(self):
         while 1:
